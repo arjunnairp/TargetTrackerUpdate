@@ -1,8 +1,11 @@
 #——————————————————————————————–#
 # Script_Name : TargetTrackerUpdate.ps1
 # Description : Update Target Tracker Application(http://www.eesforschools.org/TargetTracker); Current latest version is 15.7.4.64 and deployed version is 15.7.2.61
-# Version : 1.0
-# Changes: NA
+#               Script could be run as a standalone for individual endpoints or deployed over GPO.
+# InfoSec Risk: Writes a clear-text log to %systemroot%\system32 to assess deployment status; This might be flagged by some AV solutions as a false-positive case of system-file tampering
+# Version : 1.1
+# Changes: 
+#   v1.1: Removed typos; Changed msiexec display option from /qb(Basic UI) to /qn(no UI)
 # Date : February 2019
 # Created by Arjun N
 # Disclaimer:
@@ -12,8 +15,8 @@
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
 # OUT OF OR IN CONNECTION WITH THE SCRIPT OR THE USE OR OTHER DEALINGS IN THE SCRIPT.
 #——————————————————————————————-#
+
 #Get current version of installed product
-#: $version = Get-WmiObject -Class "Win32_Product" | Where-Object { $_.Name -eq "Primary Target Tracker" } | select Version
 $prod = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object { $_.DisplayName -eq "Primary Target Tracker"}
 $version = $prod.DisplayVersion
 
@@ -21,9 +24,9 @@ $successlog = "%systemroot%\system32\TTv1574.log"
 if(!(Test-Path $successlog) -and ($version -eq '15.7.2.61'))
 {
 # uninstall version 15.7.2.61
-cmd /c msiexec /qb /x "\\FileServer\apps\TargetTrackerSetup15.7\Primary Target Tracker.msi" /L+* %systemroot%\temp\ttlog1.txt
+cmd /c msiexec /qn /x "\\FileServer\apps\TargetTrackerSetup15.7\Primary Target Tracker.msi" /L+* %systemroot%\temp\ttlog1.txt
 # install version 15.7.4.64
-cmd /c msiexec /qb /i "\\FileServer\apps\TargetTrackerSetup15.7.4\primary Target Tracker.msi" /L+* %systemroot%\temp\ttlog2.txt
+cmd /c msiexec /qn /i "\\FileServer\apps\TargetTrackerSetup15.7.4\primary Target Tracker.msi" /L+* %systemroot%\temp\ttlog2.txt
 # Copy a logfile to remote workstation
 cmd /c copy "\\FileServer\Apps\TargetTrackerSetup15.7.4\TTv1574.log" "%systemroot%\system32\TTv1574.log"
 }
